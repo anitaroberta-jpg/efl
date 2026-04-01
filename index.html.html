@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>English For Life · Sistema de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;overflow:hidden;}
+input,select,textarea,button{font-family:inherit;}
+button{cursor:pointer;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:#1a1d27;}
+::-webkit-scrollbar-thumb{background:#2e3347;border-radius:4px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.anim{animation:fadeIn .3s ease;}
+
+/* LAYOUT */
+#app{display:flex;height:100vh;}
+#sidebar{width:240px;background:#13151f;border-right:1px solid #1e2235;display:flex;flex-direction:column;transition:width .25s;flex-shrink:0;overflow:hidden;}
+#sidebar.collapsed{width:64px;}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* SIDEBAR */
+.side-top{padding:16px 14px;border-bottom:1px solid #1e2235;display:flex;align-items:center;gap:10px;}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;}
+.brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#f1f5f9;white-space:nowrap;}
+.brand-sub{font-size:10px;color:#64748b;white-space:nowrap;}
+.collapse-btn{margin-left:auto;background:none;border:none;color:#64748b;font-size:18px;padding:0 2px;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:none;border:none;color:#94a3b8;width:100%;text-align:left;position:relative;border-left:2px solid transparent;transition:all .15s;}
+.nav-item:hover{background:#1a1d27;color:#e2e8f0;}
+.nav-item.active{background:#1a1d2e;color:#818cf8;border-left:2px solid #6366f1;}
+.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center;}
+.nav-label{font-size:13px;font-weight:600;white-space:nowrap;}
+.side-bottom{padding:12px 14px;border-top:1px solid #1e2235;}
+.side-ver{font-size:11px;color:#334155;}
+
+/* TOPBAR */
+#topbar{padding:14px 24px;border-bottom:1px solid #1e2235;background:#13151f;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.top-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#f1f5f9;}
+.top-sub{font-size:12px;color:#64748b;margin-top:2px;}
+.admin-badge{display:flex;align-items:center;gap:10px;background:#1a1d27;border-radius:12px;padding:8px 14px;}
+.admin-av{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;}
+.admin-name{font-size:13px;font-weight:700;color:#e2e8f0;}
+.admin-role{font-size:11px;color:#64748b;}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:24px;background:#0f1117;}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:#13151f;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;border:1px solid #1e2235;}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.stat-value{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#f1f5f9;}
+.stat-label{font-size:12px;color:#64748b;font-weight:500;margin-top:2px;}
+.stat-sub{font-size:11px;color:#475569;}
+
+/* CARDS */
+.card{background:#13151f;border-radius:14px;padding:18px;border:1px solid #1e2235;margin-bottom:16px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.card-title{font-weight:700;font-size:13px;color:#94a3b8;letter-spacing:.5px;text-transform:uppercase;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+
+/* TABLE */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.search-input{flex:1;min-width:200px;background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 14px;color:#e2e8f0;font-size:13px;}
+.search-input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+.table-wrap{background:#13151f;border-radius:14px;border:1px solid #1e2235;overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{padding:11px 14px;font-size:11px;font-weight:700;color:#64748b;text-align:left;background:#0f1117;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #1e2235;white-space:nowrap;}
+tr.data-row{border-bottom:1px solid #1a1d27;background:#13151f;transition:background .15s;}
+tr.data-row:hover{background:#1e2235;}
+td{padding:11px 14px;vertical-align:middle;}
+.empty-table{text-align:center;padding:32px;color:#475569;font-size:14px;}
+
+/* MISC */
+.link-btn{background:none;border:none;color:#6366f1;font-size:12px;font-weight:600;}
+.list-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:6px;transition:background .15s;}
+.list-row:hover{background:#1a1d27;}
+.row-primary{font-size:13px;font-weight:600;color:#e2e8f0;}
+.row-sec{font-size:12px;color:#64748b;margin-top:1px;}
+.row-chip{font-size:11px;background:#1a1d27;color:#94a3b8;border-radius:8px;padding:3px 8px;font-weight:600;}
+.color-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.badge{font-size:11px;font-weight:700;border-radius:8px;padding:3px 8px;display:inline-block;white-space:nowrap;}
+.level-chip{background:#1e2235;color:#818cf8;font-weight:800;font-size:12px;border-radius:6px;padding:3px 8px;}
+.av-sm{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;flex-shrink:0;}
+.av-lg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;}
+.prog-bg{height:6px;background:#1e2235;border-radius:4px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:4px;transition:width .4s;}
+.fin-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1a1d27;}
+.fin-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.fin-label{flex:1;font-size:14px;color:#94a3b8;}
+.fin-val{font-weight:800;font-size:16px;}
+.detail-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1d27;}
+.detail-key{font-size:12px;color:#64748b;}
+.detail-val{font-size:13px;font-weight:600;color:#e2e8f0;}
+.turma-meta{display:flex;gap:12px;font-size:12px;color:#64748b;margin:8px 0;}
+.teacher-top{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+
+/* PRESENCE */
+.pres-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#1a1d27;margin-bottom:4px;}
+.pres-present{background:#052e16;border:1px solid #166534;}
+.pres-absent{background:#1f0f0f;border:1px solid #7f1d1d;}
+.pres-btn{background:#1e2235;border:none;border-radius:6px;width:28px;height:28px;font-size:13px;color:#94a3b8;font-weight:700;transition:all .15s;}
+.pres-btn.on{background:#166534;color:#86efac;}
+.pres-btn.off{background:#7f1d1d;color:#fca5a5;}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;transition:all .15s;white-space:nowrap;}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-cancel{background:#1a1d27;color:#94a3b8;border:1px solid #1e2235;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:600;}
+.btn-icon{background:#1a1d27;border:1px solid #1e2235;border-radius:8px;padding:5px 10px;font-size:13px;color:#e2e8f0;display:inline-flex;align-items:center;gap:4px;}
+.btn-icon:hover{background:#1e2235;}
+.btn-danger{background:#1f0f0f;border:1px solid #3f0f0f;}
+.btn-pay{background:#052e16;border:1px solid #166534;color:#86efac;}
+.tab-btn{background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;color:#64748b;}
+.tab-btn.active{background:#1a1d2e;color:#818cf8;border:1px solid #4f46e5;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+.modal{background:#13151f;border-radius:18px;width:100%;max-width:540px;border:1px solid #1e2235;max-height:90vh;display:flex;flex-direction:column;}
+.modal.wide{max-width:720px;}
+.modal-header{padding:16px 20px;border-bottom:1px solid #1e2235;display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#f1f5f9;}
+.modal-close{background:none;border:none;color:#64748b;font-size:18px;line-height:1;}
+.modal-body{padding:20px;overflow-y:auto;flex:1;}
+.modal-footer{padding:14px 20px;border-top:1px solid #1e2235;display:flex;gap:10px;justify-content:flex-end;}
+
+/* FORM */
+.form-grid{display:flex;flex-wrap:wrap;gap:12px;}
+.field{flex:1 1 100%;display:flex;flex-direction:column;gap:4px;}
+.field.half{flex:0 0 calc(50% - 6px);}
+.field label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;}
+.field input,.field select,.field textarea{background:#0f1117;border:1px solid #1e2235;border-radius:9px;padding:9px 12px;color:#e2e8f0;font-size:13px;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+.field textarea{resize:vertical;min-height:70px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#1a2e1a;border:1px solid #166534;color:#86efac;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;animation:toastIn .3s ease;}
+
+/* REPORT */
+.rep-bar-wrap{margin-bottom:16px;}
+.rep-bar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="side-top">
+      <div class="brand-mark">EF</div>
+      <div id="brand-text">
+        <div class="brand-name">English For Life</div>
+        <div class="brand-sub">Sistema de Gestão</div>
+      </div>
+      <button class="collapse-btn" onclick="toggleSidebar()">‹</button>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-bottom"><div class="side-ver" id="side-ver">v1.0 · English For Life</div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <div class="top-title" id="page-title">Dashboard</div>
+        <div class="top-sub" id="page-date"></div>
+      </div>
+      <div class="admin-badge">
+        <div class="admin-av">AD</div>
+        <div>
+          <div class="admin-name">Administrador</div>
+          <div class="admin-role">Coordenação</div>
+        </div>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="modal-container"></div>
+
+<script>
+// ═══════════════ DATA ═══════════════
+let students = [
+  {id:1,name:"Ana Carolina Silva",email:"ana@email.com",phone:"(84) 99123-4567",cpf:"123.456.789-00",birth:"1998-05-14",level:"B2",turma:"T2",status:"ativo",enrolled:"2025-03-01",obs:"Ótima aluna, muito dedicada."},
+  {id:2,name:"Lucas Martins",email:"lucas@email.com",phone:"(84) 98765-4321",cpf:"987.654.321-00",birth:"2000-11-22",level:"A2",turma:"T1",status:"ativo",enrolled:"2025-01-15",obs:""},
+  {id:3,name:"Fernanda Costa",email:"fer@email.com",phone:"(84) 91234-5678",cpf:"456.123.789-00",birth:"1995-07-30",level:"C1",turma:"T3",status:"ativo",enrolled:"2024-08-10",obs:"Candidata ao IELTS."},
+  {id:4,name:"Rafael Souza",email:"rafael@email.com",phone:"(84) 99876-1234",cpf:"321.654.987-00",birth:"2002-02-18",level:"A1",turma:"T1",status:"inativo",enrolled:"2025-02-01",obs:"Trancou em junho."},
+  {id:5,name:"Juliana Neves",email:"ju@email.com",phone:"(84) 98234-5678",cpf:"654.321.123-00",birth:"1999-09-05",level:"B1",turma:"T2",status:"ativo",enrolled:"2025-01-20",obs:""},
+  {id:6,name:"Carlos Eduardo Lima",email:"carlos@email.com",phone:"(84) 97654-3210",cpf:"789.012.345-00",birth:"1993-12-01",level:"B2",turma:"T3",status:"ativo",enrolled:"2024-11-05",obs:"Business English."},
+];
+let turmas = [
+  {id:"T1",name:"Turma A1/A2 – Matutino",teacher:"Prof. James Walker",days:"Seg/Qua/Sex",time:"09:00",level:"A1-A2",max:10,color:"#10b981"},
+  {id:"T2",name:"Turma B1/B2 – Noturno",teacher:"Prof. Sarah Johnson",days:"Ter/Qui",time:"19:00",level:"B1-B2",max:12,color:"#6366f1"},
+  {id:"T3",name:"Turma C1/C2 – Tarde",teacher:"Prof. Michael Brown",days:"Seg/Qua",time:"15:00",level:"C1-C2",max:8,color:"#f59e0b"},
+];
+let teachers = [
+  {id:1,name:"Prof. Sarah Johnson",email:"sarah@school.com",phone:"(84) 99111-2222",nationality:"Americana",cert:"CELTA, DELTA",turmas:["T2"],status:"ativo"},
+  {id:2,name:"Prof. James Walker",email:"james@school.com",phone:"(84) 99333-4444",nationality:"Britânico",cert:"CELTA, TESOL",turmas:["T1"],status:"ativo"},
+  {id:3,name:"Prof. Michael Brown",email:"michael@school.com",phone:"(84) 99555-6666",nationality:"Canadense",cert:"TEFL, IELTS Examiner",turmas:["T3"],status:"ativo"},
+];
+let payments = [
+  {id:1,studentId:1,student:"Ana Carolina Silva",month:"Jan/2026",due:"2026-01-05",value:310,status:"pago",paidAt:"2026-01-03",method:"PIX"},
+  {id:2,studentId:1,student:"Ana Carolina Silva",month:"Fev/2026",due:"2026-02-05",value:310,status:"pago",paidAt:"2026-02-04",method:"PIX"},
+  {id:3,studentId:1,student:"Ana Carolina Silva",month:"Mar/2026",due:"2026-03-05",value:310,status:"pago",paidAt:"2026-03-01",method:"Boleto"},
+  {id:4,studentId:1,student:"Ana Carolina Silva",month:"Abr/2026",due:"2026-04-05",value:310,status:"avencer",paidAt:null,method:null},
+  {id:5,studentId:2,student:"Lucas Martins",month:"Jan/2026",due:"2026-01-05",value:280,status:"pago",paidAt:"2026-01-05",method:"Cartão"},
+  {id:6,studentId:2,student:"Lucas Martins",month:"Fev/2026",due:"2026-02-05",value:280,status:"pago",paidAt:"2026-02-03",method:"PIX"},
+  {id:7,studentId:2,student:"Lucas Martins",month:"Mar/2026",due:"2026-03-05",value:280,status:"atrasado",paidAt:null,method:null},
+  {id:8,studentId:3,student:"Fernanda Costa",month:"Jan/2026",due:"2026-01-05",value:350,status:"pago",paidAt:"2026-01-02",method:"PIX"},
+  {id:9,studentId:3,student:"Fernanda Costa",month:"Fev/2026",due:"2026-02-05",value:350,status:"pago",paidAt:"2026-02-01",method:"PIX"},
+  {id:10,studentId:3,student:"Fernanda Costa",month:"Mar/2026",due:"2026-03-05",value:350,status:"pago",paidAt:"2026-03-03",method:"PIX"},
+  {id:11,studentId:5,student:"Juliana Neves",month:"Fev/2026",due:"2026-02-05",value:295,status:"pago",paidAt:"2026-02-04",method:"Cartão"},
+  {id:12,studentId:5,student:"Juliana Neves",month:"Mar/2026",due:"2026-03-05",value:295,status:"atrasado",paidAt:null,method:null},
+  {id:13,studentId:6,student:"Carlos Eduardo Lima",month:"Mar/2026",due:"2026-03-05",value:390,status:"pago",paidAt:"2026-03-02",method:"PIX"},
+];
+let lessons = [
+  {id:1,turmaId:"T2",date:"2026-03-27",topic:"Phrasal Verbs – Up & Down",duration:60,teacher:"Prof. Sarah Johnson",homework:"Worksheet p.45-46",notes:"Boa participação.",present:[1,5,6],absent:[]},
+  {id:2,turmaId:"T2",date:"2026-03-25",topic:"Articles & Determiners",duration:60,teacher:"Prof. Sarah Johnson",homework:"",notes:"",present:[1,5],absent:[6]},
+  {id:3,turmaId:"T1",date:"2026-03-26",topic:"Simple Past – Regular Verbs",duration:60,teacher:"Prof. James Walker",homework:"Ex. 1-10 p.32",notes:"Turma evoluindo bem.",present:[2],absent:[4]},
+  {id:4,turmaId:"T3",date:"2026-03-28",topic:"Advanced Conditionals",duration:90,teacher:"Prof. Michael Brown",homework:"Essay: 200 words",notes:"Fernanda excelente.",present:[3,6],absent:[]},
+];
+
+// ═══════════════ HELPERS ═══════════════
+const uid=()=>Math.floor(Math.random()*90000)+10000;
+const fmtBRL=v=>'R$ '+Number(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'-';
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const av=name=>name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const statusBadge=s=>{
+  const map={ativo:['#dcfce7','#166534','Ativo'],inativo:['#f1f5f9','#64748b','Inativo'],pago:['#dcfce7','#166534','✓ Pago'],atrasado:['#fee2e2','#991b1b','⚠ Atrasado'],avencer:['#fef9c3','#854d0e','⏳ A vencer']};
+  const[bg,color,label]=map[s]||['#f1f5f9','#64748b',s];
+  return `<span class="badge" style="background:${bg};color:${color}">${label}</span>`;
+};
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',2800);
+}
+
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+
+function openModal(title,bodyHTML,wide,footerHTML){
+  document.getElementById('modal-container').innerHTML=`
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal${wide?' wide':''}">
+      <div class="modal-header">
+        <span class="modal-title">${title}</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">${bodyHTML}</div>
+      ${footerHTML?`<div class="modal-footer">${footerHTML}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ═══════════════ NAV ═══════════════
+const PAGES=[
+  {id:'dashboard',icon:'◉',label:'Dashboard'},
+  {id:'students',icon:'👥',label:'Alunos'},
+  {id:'turmas',icon:'🏫',label:'Turmas'},
+  {id:'teachers',icon:'👨‍🏫',label:'Professores'},
+  {id:'lessons',icon:'📒',label:'Registro de Aulas'},
+  {id:'payments',icon:'💰',label:'Financeiro'},
+  {id:'reports',icon:'📊',label:'Relatórios'},
+];
+
+let currentPage='dashboard';
+let sideCollapsed=false;
+
+function buildNav(){
+  const nav=document.getElementById('nav');
+  nav.innerHTML=PAGES.map(p=>`
+    <button class="nav-item${p.id===currentPage?' active':''}" onclick="goTo('${p.id}')">
+      <span class="nav-icon">${p.icon}</span>
+      <span class="nav-label">${p.label}</span>
+    </button>`).join('');
+}
+
+function goTo(page){
+  currentPage=page;
+  document.getElementById('page-title').textContent=PAGES.find(p=>p.id===page)?.label||page;
+  buildNav();
+  render();
+}
+
+function toggleSidebar(){
+  sideCollapsed=!sideCollapsed;
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('collapsed',sideCollapsed);
+  document.getElementById('brand-text').style.display=sideCollapsed?'none':'block';
+  document.getElementById('side-ver').style.display=sideCollapsed?'none':'block';
+  sb.querySelector('.collapse-btn').textContent=sideCollapsed?'›':'‹';
+  document.querySelectorAll('.nav-label').forEach(el=>el.style.display=sideCollapsed?'none':'');
+}
+
+function render(){
+  const c=document.getElementById('content');
+  c.className='anim';
+  void c.offsetWidth;
+  if(currentPage==='dashboard') c.innerHTML=renderDashboard();
+  else if(currentPage==='students') c.innerHTML=renderStudents();
+  else if(currentPage==='turmas') c.innerHTML=renderTurmas();
+  else if(currentPage==='teachers') c.innerHTML=renderTeachers();
+  else if(currentPage==='lessons') c.innerHTML=renderLessons();
+  else if(currentPage==='payments') c.innerHTML=renderPayments();
+  else if(currentPage==='reports') c.innerHTML=renderReports();
+}
+
+// ═══════════════ DASHBOARD ═══════════════
+function renderDashboard(){
+  const ativos=students.filter(s=>s.status==='ativo').length;
+  const receita=payments.filter(p=>p.status==='pago').reduce((a,b)=>a+b.value,0);
+  const atrasados=payments.filter(p=>p.status==='atrasado').length;
+  const aulasMes=lessons.filter(l=>l.date.startsWith('2026-03')).length;
+
+  const recentLessons=[...lessons].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const overdue=payments.filter(p=>p.status==='atrasado');
+
+  const statCards=`
+  <div class="stats-grid">
+    ${[
+      {icon:'👥',label:'Alunos Ativos',value:ativos,sub:students.length+' total',color:'#6366f1'},
+      {icon:'💰',label:'Total Recebido',value:fmtBRL(receita),sub:'registros pagos',color:'#10b981'},
+      {icon:'⚠',label:'Inadimplentes',value:atrasados,sub:'mensalidades',color:'#ef4444'},
+      {icon:'📒',label:'Aulas Registradas',value:aulasMes,sub:'este mês',color:'#f59e0b'},
+    ].map(s=>`
+    <div class="stat-card" style="border-top:4px solid ${s.color}">
+      <div class="stat-icon" style="background:${s.color}18">${s.icon}</div>
+      <div>
+        <div class="stat-value">${s.value}</div>
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-sub">${s.sub}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+
+  const lessonsCard=`
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📒 Aulas Recentes</span>
+      <button class="link-btn" onclick="goTo('lessons')">Ver todas →</button>
+    </div>
+    ${recentLessons.map(l=>{
+      const t=turmas.find(x=>x.id===l.turmaId)||{};
+      return `<div class="list-row">
+        <div class="color-dot" style="background:${t.color||'#6366f1'}"></div>
+        <div style="flex:1">
+          <div class="row-primary">${esc(l.topic)}</div>
+          <div class="row-sec">${esc(t.name||l.turmaId)} · ${fmtDate(l.date)}</div>
+        </div>
+        <span class="row-chip">${(l.present||[]).length} presentes</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  const overdueCard=`
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚠ Mensalidades Atrasadas</span>
+      <button class="link-btn" onclick="goTo('payments')">Ver todas →</button>
+    </div>
+    ${overdue.length===0?'<p style="color:#475569;font-size:13px;padding:8px 0">🎉 Nenhuma inadimplência!</p>':
+      overdue.map(p=>`<div class="list-row">
+        <div class="av-sm" style="background:#ef4444">${av(p.student)}</div>
+        <div style="flex:1">
+          <div class="row-primary">${esc(p.student)}</div>
+          <div class="row-sec">${p.month} · Venc. ${fmtDate(p.due)}</div>
+        </div>
+        <span class="badge" style="background:#fee2e2;color:#991b1b">${fmtBRL(p.value)}</span>
+      </div>`).join('')}
+  </div>`;
+
+  const turmasCard=`
+  <div class="card">
+    <div class="card-header"><span class="card-title">🏫 Ocupação das Turmas</span></div>
+    ${turmas.map(t=>{
+      const count=students.filter(s=>s.turma===t.id&&s.status==='ativo').length;
+      const pct=Math.round((count/t.max)*100);
+      return `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0">${esc(t.name)}</span>
+          <span style="font-size:12px;color:#94a3b8">${count}/${t.max}</span>
+        </div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${t.color}"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  const finCard=`
+  <div class="card">
+    <div class="card-header"><span class="card-title">💰 Resumo Financeiro</span></div>
+    ${[
+      {label:'Recebido',val:payments.filter(p=>p.status==='pago').reduce((a,b)=>a+b.value,0),color:'#10b981'},
+      {label:'A vencer',val:payments.filter(p=>p.status==='avencer').reduce((a,b)=>a+b.value,0),color:'#f59e0b'},
+      {label:'Atrasado',val:payments.filter(p=>p.status==='atrasado').reduce((a,b)=>a+b.value,0),color:'#ef4444'},
+    ].map(r=>`<div class="fin-row">
+      <span class="fin-dot" style="background:${r.color}"></span>
+      <span class="fin-label">${r.label}</span>
+      <span class="fin-val" style="color:${r.color}">${fmtBRL(r.val)}</span>
+    </div>`).join('')}
+  </div>`;
+
+  return statCards+`<div class="dash-grid">${lessonsCard}${overdueCard}${turmasCard}${finCard}</div>`;
+}
+
+// ═══════════════ STUDENTS ═══════════════
+let stFilter={search:'',status:'todos',turma:'todos'};
+
+function renderStudents(){
+  const filtered=students.filter(s=>{
+    const q=stFilter.search.toLowerCase();
+    return (s.name.toLowerCase().includes(q)||s.email.toLowerCase().includes(q))
+      &&(stFilter.status==='todos'||s.status===stFilter.status)
+      &&(stFilter.turma==='todos'||s.turma===stFilter.turma);
+  });
+  return `
+  <div class="toolbar">
+    <input class="search-input" placeholder="🔍  Buscar aluno..." value="${esc(stFilter.search)}" oninput="stFilter.search=this.value;render()"/>
+    <select style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px" onchange="stFilter.status=this.value;render()">
+      <option value="todos" ${stFilter.status==='todos'?'selected':''}>Todos status</option>
+      <option value="ativo" ${stFilter.status==='ativo'?'selected':''}>Ativos</option>
+      <option value="inativo" ${stFilter.status==='inativo'?'selected':''}>Inativos</option>
+    </select>
+    <select style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px" onchange="stFilter.turma=this.value;render()">
+      <option value="todos">Todas turmas</option>
+      ${turmas.map(t=>`<option value="${t.id}" ${stFilter.turma===t.id?'selected':''}>${t.id} – ${t.level}</option>`).join('')}
+    </select>
+    <button class="btn-primary" onclick="openStudentModal()">+ Novo Aluno</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Aluno</th><th>Contato</th><th>Nível</th><th>Turma</th><th>Matrícula</th><th>Status</th><th>Ações</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="7" class="empty-table">Nenhum aluno encontrado.</td></tr>`:
+          filtered.map(s=>{
+            const t=turmas.find(x=>x.id===s.turma)||{};
+            return `<tr class="data-row">
+              <td><div style="display:flex;align-items:center;gap:10px">
+                <div class="av-sm" style="background:${s.status==='ativo'?'#6366f1':'#475569'}">${av(s.name)}</div>
+                <div><div class="row-primary">${esc(s.name)}</div><div class="row-sec">${esc(s.cpf)}</div></div>
+              </div></td>
+              <td><div class="row-sec">${esc(s.email)}</div><div class="row-sec">${esc(s.phone)}</div></td>
+              <td><span class="level-chip">${s.level}</span></td>
+              <td><span class="badge" style="background:${(t.color||'#6366f1')}22;color:${t.color||'#6366f1'}">${esc(t.name||s.turma)}</span></td>
+              <td><span class="row-sec">${fmtDate(s.enrolled)}</span></td>
+              <td>${statusBadge(s.status)}</td>
+              <td><div style="display:flex;gap:6px">
+                <button class="btn-icon" onclick="openStudentModal(${s.id})">✏️</button>
+                <button class="btn-icon btn-danger" onclick="delStudent(${s.id})">🗑</button>
+              </div></td>
+            </tr>`;
+          }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openStudentModal(id){
+  const s=id?students.find(x=>x.id===id):{id:null,name:'',email:'',phone:'',cpf:'',birth:'',level:'A1',turma:turmas[0]?.id||'T1',status:'ativo',enrolled:todayStr(),obs:''};
+  const body=`<div class="form-grid">
+    <div class="field"><label>Nome completo *</label><input id="f-name" value="${esc(s.name)}"/></div>
+    <div class="field half"><label>E-mail *</label><input id="f-email" type="email" value="${esc(s.email)}"/></div>
+    <div class="field half"><label>Telefone</label><input id="f-phone" value="${esc(s.phone)}" placeholder="(84) 99999-0000"/></div>
+    <div class="field half"><label>CPF</label><input id="f-cpf" value="${esc(s.cpf)}" placeholder="000.000.000-00"/></div>
+    <div class="field half"><label>Nascimento</label><input id="f-birth" type="date" value="${s.birth||''}"/></div>
+    <div class="field half"><label>Nível</label><select id="f-level">${['A1','A2','B1','B2','C1','C2'].map(l=>`<option ${s.level===l?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div class="field half"><label>Turma</label><select id="f-turma">${turmas.map(t=>`<option value="${t.id}" ${s.turma===t.id?'selected':''}>${t.name}</option>`).join('')}</select></div>
+    <div class="field half"><label>Status</label><select id="f-status"><option value="ativo" ${s.status==='ativo'?'selected':''}>Ativo</option><option value="inativo" ${s.status==='inativo'?'selected':''}>Inativo</option></select></div>
+    <div class="field half"><label>Data de Matrícula</label><input id="f-enrolled" type="date" value="${s.enrolled||''}"/></div>
+    <div class="field"><label>Observações</label><textarea id="f-obs">${esc(s.obs)}</textarea></div>
+  </div>`;
+  const footer=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="saveStudent(${id||'null'})">
+      ${id?'Salvar Alterações':'Cadastrar Aluno'}
+    </button>`;
+  openModal(id?'✏️ Editar Aluno':'➕ Novo Aluno',body,true,footer);
+}
+
+function saveStudent(id){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  if(!name||!email){alert('Nome e e-mail são obrigatórios.');return;}
+  const obj={
+    id:id||uid(),name,email,
+    phone:document.getElementById('f-phone').value,
+    cpf:document.getElementById('f-cpf').value,
+    birth:document.getElementById('f-birth').value,
+    level:document.getElementById('f-level').value,
+    turma:document.getElementById('f-turma').value,
+    status:document.getElementById('f-status').value,
+    enrolled:document.getElementById('f-enrolled').value,
+    obs:document.getElementById('f-obs').value,
+  };
+  if(id) students=students.map(s=>s.id===id?obj:s);
+  else students.push(obj);
+  closeModal(); toast(id?'✅ Aluno atualizado!':'✅ Aluno cadastrado!'); render();
+}
+
+function delStudent(id){
+  if(!confirm('Remover este aluno?'))return;
+  students=students.filter(s=>s.id!==id);
+  toast('🗑 Aluno removido.'); render();
+}
+
+// ═══════════════ TURMAS ═══════════════
+function renderTurmas(){
+  return `
+  <div class="toolbar">
+    <span style="color:#94a3b8;font-size:14px">${turmas.length} turmas cadastradas</span>
+    <button class="btn-primary" onclick="openTurmaModal()">+ Nova Turma</button>
+  </div>
+  <div class="card-grid">
+    ${turmas.map(t=>{
+      const count=students.filter(s=>s.turma===t.id&&s.status==='ativo').length;
+      const tStudents=students.filter(s=>s.turma===t.id);
+      const pct=Math.min(100,Math.round((count/t.max)*100));
+      return `<div class="card" style="border-top:4px solid ${t.color}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;font-size:14px;color:${t.color};margin-bottom:2px">${esc(t.name)}</div>
+            <div class="row-sec">${esc(t.teacher)}</div>
+          </div>
+          <span class="badge" style="background:${t.color}22;color:${t.color}">${t.level}</span>
+        </div>
+        <div class="turma-meta"><span>📅 ${t.days}</span><span>🕐 ${t.time}</span><span>👥 ${count}/${t.max}</span></div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${t.color}"></div></div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:#64748b;margin-bottom:6px">Alunos:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${tStudents.slice(0,6).map(s=>`<div class="av-sm" title="${esc(s.name)}" style="width:28px;height:28px;font-size:10px;background:${s.status==='ativo'?t.color:'#475569'}">${av(s.name)}</div>`).join('')}
+            ${tStudents.length>6?`<div class="av-sm" style="width:28px;height:28px;font-size:10px;background:#334155">+${tStudents.length-6}</div>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:12px">
+          <button class="btn-icon" style="flex:1;justify-content:center" onclick="openTurmaModal('${t.id}')">✏️ Editar</button>
+          <button class="btn-icon" style="flex:1;justify-content:center" onclick="viewTurma('${t.id}')">👁 Detalhes</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openTurmaModal(id){
+  const t=id?turmas.find(x=>x.id===id):{id:'',name:'',teacher:teachers[0]?.name||'',days:'',time:'',level:'A1-A2',max:10,color:'#6366f1'};
+  const body=`<div class="form-grid">
+    <div class="field half"><label>ID da Turma *</label><input id="t-id" value="${esc(t.id)}" ${id?'disabled':''} placeholder="T4"/></div>
+    <div class="field half"><label>Nível</label><input id="t-level" value="${esc(t.level)}" placeholder="B1-B2"/></div>
+    <div class="field"><label>Nome da Turma</label><input id="t-name" value="${esc(t.name)}"/></div>
+    <div class="field"><label>Professor</label><select id="t-teacher">${teachers.map(x=>`<option ${t.teacher===x.name?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+    <div class="field half"><label>Dias</label><input id="t-days" value="${esc(t.days)}" placeholder="Ter/Qui"/></div>
+    <div class="field half"><label>Horário</label><input id="t-time" value="${esc(t.time)}" placeholder="19:00"/></div>
+    <div class="field half"><label>Capacidade máx.</label><input id="t-max" type="number" value="${t.max}"/></div>
+    <div class="field half"><label>Cor</label><input id="t-color" type="color" value="${t.color}"/></div>
+  </div>`;
+  const footer=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="saveTurma('${id||''}')">
+      ${id?'Salvar':'Criar Turma'}
+    </button>`;
+  openModal(id?'✏️ Editar Turma':'➕ Nova Turma',body,false,footer);
+}
+
+function saveTurma(id){
+  const tid=document.getElementById('t-id').value.trim();
+  const name=document.getElementById('t-name').value.trim();
+  if(!tid||!name){alert('ID e nome são obrigatórios.');return;}
+  const obj={id:tid,name,teacher:document.getElementById('t-teacher').value,days:document.getElementById('t-days').value,time:document.getElementById('t-time').value,level:document.getElementById('t-level').value,max:Number(document.getElementById('t-max').value),color:document.getElementById('t-color').value};
+  if(id) turmas=turmas.map(t=>t.id===id?obj:t);
+  else{ if(turmas.find(t=>t.id===tid)){alert('ID já existe!');return;} turmas.push(obj); }
+  closeModal(); toast(id?'✅ Turma atualizada!':'✅ Turma criada!'); render();
+}
+
+function viewTurma(id){
+  const t=turmas.find(x=>x.id===id);
+  if(!t)return;
+  const tStudents=students.filter(s=>s.turma===id);
+  const body=`<div style="display:flex;gap:20px;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px">
+      ${[['ID',t.id],['Professor',t.teacher],['Dias',t.days],['Horário',t.time],['Nível',t.level],['Capacidade',`${tStudents.length}/${t.max}`]].map(([k,v])=>`<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${esc(v)}</span></div>`).join('')}
+    </div>
+    <div style="flex:2;min-width:260px">
+      <div style="font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:10px">ALUNOS DA TURMA</div>
+      ${tStudents.map(s=>`<div class="list-row" style="background:#1a1d27;border-radius:8px;margin-bottom:6px;padding:10px">
+        <div class="av-sm" style="background:#6366f1">${av(s.name)}</div>
+        <div style="flex:1"><div class="row-primary">${esc(s.name)}</div><div class="row-sec">${s.level} · ${esc(s.email)}</div></div>
+        ${statusBadge(s.status)}
+      </div>`).join('')}
+    </div>
+  </div>`;
+  openModal(`📋 ${esc(t.name)}`,body,true,`<button class="btn-cancel" onclick="closeModal()">Fechar</button>`);
+}
+
+// ═══════════════ TEACHERS ═══════════════
+function renderTeachers(){
+  return `
+  <div class="toolbar">
+    <span style="color:#94a3b8;font-size:14px">${teachers.length} professores</span>
+    <button class="btn-primary" onclick="openTeacherModal()">+ Novo Professor</button>
+  </div>
+  <div class="card-grid">
+    ${teachers.map(t=>`<div class="card">
+      <div class="teacher-top">
+        <div class="av-lg" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">${av(t.name)}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:3px">${esc(t.name)}</div>
+          <div class="row-sec">${esc(t.nationality)}</div>
+          ${statusBadge(t.status)}
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div class="row-sec">📧 ${esc(t.email)}</div>
+        <div class="row-sec">📱 ${esc(t.phone)}</div>
+        <div class="row-sec">🏅 ${esc(t.cert)}</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px">Turmas:</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${(t.turmas||[]).map(tid=>{const tr=turmas.find(x=>x.id===tid);return tr?`<span class="badge" style="background:${tr.color}22;color:${tr.color}">${tr.id}</span>`:''}).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-icon" style="flex:1;justify-content:center" onclick="openTeacherModal(${t.id})">✏️ Editar</button>
+        <button class="btn-icon btn-danger" onclick="delTeacher(${t.id})">🗑</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function openTeacherModal(id){
+  const t=id?teachers.find(x=>x.id===id):{id:null,name:'',email:'',phone:'',nationality:'',cert:'',turmas:[],status:'ativo'};
+  const body=`<div class="form-grid">
+    <div class="field"><label>Nome completo</label><input id="tc-name" value="${esc(t.name)}"/></div>
+    <div class="field half"><label>E-mail</label><input id="tc-email" type="email" value="${esc(t.email)}"/></div>
+    <div class="field half"><label>Telefone</label><input id="tc-phone" value="${esc(t.phone)}"/></div>
+    <div class="field half"><label>Nacionalidade</label><input id="tc-nat" value="${esc(t.nationality)}" placeholder="Americana, Britânico..."/></div>
+    <div class="field half"><label>Certificações</label><input id="tc-cert" value="${esc(t.cert)}" placeholder="CELTA, TEFL..."/></div>
+    <div class="field half"><label>Status</label><select id="tc-status"><option value="ativo" ${t.status==='ativo'?'selected':''}>Ativo</option><option value="inativo" ${t.status==='inativo'?'selected':''}>Inativo</option></select></div>
+  </div>`;
+  const footer=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="saveTeacher(${id||'null'})">${id?'Salvar':'Cadastrar'}</button>`;
+  openModal(id?'✏️ Editar Professor':'➕ Novo Professor',body,false,footer);
+}
+
+function saveTeacher(id){
+  const name=document.getElementById('tc-name').value.trim();
+  if(!name)return;
+  const obj={id:id||uid(),name,email:document.getElementById('tc-email').value,phone:document.getElementById('tc-phone').value,nationality:document.getElementById('tc-nat').value,cert:document.getElementById('tc-cert').value,turmas:id?teachers.find(t=>t.id===id)?.turmas||[]:[]  ,status:document.getElementById('tc-status').value};
+  if(id) teachers=teachers.map(t=>t.id===id?obj:t);
+  else teachers.push(obj);
+  closeModal(); toast('✅ Professor salvo!'); render();
+}
+
+function delTeacher(id){
+  if(!confirm('Remover este professor?'))return;
+  teachers=teachers.filter(t=>t.id!==id);
+  toast('🗑 Professor removido.'); render();
+}
+
+// ═══════════════ LESSONS ═══════════════
+let lsFilter={search:'',turma:'todos'};
+let presenceData={present:[],absent:[]};
+
+function renderLessons(){
+  const filtered=lessons.filter(l=>{
+    const q=lsFilter.search.toLowerCase();
+    return (lsFilter.turma==='todos'||l.turmaId===lsFilter.turma)
+      &&(l.topic.toLowerCase().includes(q)||l.teacher.toLowerCase().includes(q));
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  return `
+  <div class="toolbar">
+    <input class="search-input" placeholder="🔍  Buscar por tópico..." value="${esc(lsFilter.search)}" oninput="lsFilter.search=this.value;render()"/>
+    <select style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px" onchange="lsFilter.turma=this.value;render()">
+      <option value="todos">Todas as turmas</option>
+      ${turmas.map(t=>`<option value="${t.id}" ${lsFilter.turma===t.id?'selected':''}>${t.name}</option>`).join('')}
+    </select>
+    <button class="btn-primary" onclick="openLessonModal()">+ Registrar Aula</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Turma</th><th>Tópico</th><th>Professor</th><th>Duração</th><th>Presença</th><th>HW</th><th>Ações</th></tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="8" class="empty-table">Nenhuma aula registrada.</td></tr>`:
+          filtered.map(l=>{
+            const t=turmas.find(x=>x.id===l.turmaId)||{};
+            return `<tr class="data-row">
+              <td><span class="row-primary">${fmtDate(l.date)}</span></td>
+              <td><span class="badge" style="background:${(t.color||'#6366f1')}22;color:${t.color||'#6366f1'}">${t.id||l.turmaId}</span></td>
+              <td><div class="row-primary">${esc(l.topic)}</div>${l.notes?`<div class="row-sec">${esc(l.notes.slice(0,40))}${l.notes.length>40?'…':''}</div>`:''}</td>
+              <td><span class="row-sec">${esc(l.teacher)}</span></td>
+              <td><span class="row-sec">${l.duration} min</span></td>
+              <td><div style="display:flex;gap:4px">
+                <span class="badge" style="background:#dcfce7;color:#166534">✓ ${(l.present||[]).length}</span>
+                ${(l.absent||[]).length>0?`<span class="badge" style="background:#fee2e2;color:#991b1b">✗ ${l.absent.length}</span>`:''}
+              </div></td>
+              <td>${l.homework?`<span class="badge" style="background:#fef9c3;color:#854d0e">📝 Sim</span>`:'<span class="row-sec">—</span>'}</td>
+              <td><div style="display:flex;gap:6px">
+                <button class="btn-icon" onclick="openLessonModal(${l.id})">✏️</button>
+                <button class="btn-icon btn-danger" onclick="delLesson(${l.id})">🗑</button>
+              </div></td>
+            </tr>`;
+          }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openLessonModal(id){
+  const l=id?lessons.find(x=>x.id===id):{id:null,turmaId:turmas[0]?.id||'T1',date:todayStr(),topic:'',duration:60,teacher:teachers[0]?.name||'',homework:'',notes:'',present:[],absent:[]};
+  presenceData={present:[...(l.present||[])],absent:[...(l.absent||[])]};
+  const turmaStudents=students.filter(s=>s.turma===l.turmaId&&s.status==='ativo');
+
+  const body=`<div class="form-grid">
+    <div class="field half"><label>Turma</label>
+      <select id="l-turma" onchange="updatePresenceList(this.value)">
+        ${turmas.map(t=>`<option value="${t.id}" ${l.turmaId===t.id?'selected':''}>${t.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field half"><label>Data</label><input id="l-date" type="date" value="${l.date||''}"/></div>
+    <div class="field"><label>Tópico / Conteúdo</label><input id="l-topic" value="${esc(l.topic)}" placeholder="Ex: Present Perfect Continuous"/></div>
+    <div class="field half"><label>Professor</label>
+      <select id="l-teacher">${teachers.map(t=>`<option ${l.teacher===t.name?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+    </div>
+    <div class="field half"><label>Duração (min)</label><input id="l-dur" type="number" value="${l.duration}"/></div>
+    <div class="field"><label>Homework</label><input id="l-hw" value="${esc(l.homework)}" placeholder="Ex: Worksheet p.45"/></div>
+    <div class="field"><label>Observações</label><textarea id="l-notes">${esc(l.notes)}</textarea></div>
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:10px;letter-spacing:.5px">LISTA DE PRESENÇA</div>
+    <div id="presence-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${turmaStudents.map(s=>presenceRow(s)).join('')}
+    </div>
+    ${turmaStudents.length===0?'<p style="color:#475569;font-size:13px">Nenhum aluno ativo nesta turma.</p>':''}
+  </div>`;
+
+  const footer=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="saveLesson(${id||'null'})">${id?'Salvar':'Registrar Aula'}</button>`;
+  openModal(id?'✏️ Editar Registro':'📒 Registrar Aula',body,true,footer);
+}
+
+function presenceRow(s){
+  const isPresent=presenceData.present.includes(s.id);
+  const isAbsent=presenceData.absent.includes(s.id);
+  return `<div class="pres-row ${isPresent?'pres-present':isAbsent?'pres-absent':''}" id="prow-${s.id}">
+    <div class="av-sm" style="background:#6366f1;width:28px;height:28px;font-size:10px">${av(s.name)}</div>
+    <span style="flex:1;font-size:13px;color:#e2e8f0">${esc(s.name)}</span>
+    <button class="pres-btn ${isPresent?'on':''}" onclick="togglePresence(${s.id},true)">✓</button>
+    <button class="pres-btn ${isAbsent?'off':''}" onclick="togglePresence(${s.id},false)">✗</button>
+  </div>`;
+}
+
+function togglePresence(sid,isPresent){
+  if(isPresent){
+    presenceData.present=presenceData.present.filter(x=>x!==sid).concat(sid);
+    presenceData.absent=presenceData.absent.filter(x=>x!==sid);
+  } else {
+    presenceData.absent=presenceData.absent.filter(x=>x!==sid).concat(sid);
+    presenceData.present=presenceData.present.filter(x=>x!==sid);
+  }
+  const row=document.getElementById('prow-'+sid);
+  if(row){
+    row.className='pres-row '+(isPresent?'pres-present':presenceData.absent.includes(sid)?'pres-absent':'');
+    row.querySelectorAll('.pres-btn').forEach((btn,i)=>{
+      btn.className='pres-btn '+(i===0&&isPresent?'on':i===1&&!isPresent?'off':'');
+    });
+  }
+}
+
+function updatePresenceList(turmaId){
+  const list=document.getElementById('presence-list');
+  if(!list)return;
+  presenceData={present:[],absent:[]};
+  const turmaStudents=students.filter(s=>s.turma===turmaId&&s.status==='ativo');
+  list.innerHTML=turmaStudents.map(s=>presenceRow(s)).join('');
+}
+
+function saveLesson(id){
+  const topic=document.getElementById('l-topic').value.trim();
+  const date=document.getElementById('l-date').value;
+  if(!topic||!date){alert('Tópico e data são obrigatórios.');return;}
+  const obj={
+    id:id||uid(),
+    turmaId:document.getElementById('l-turma').value,
+    date,topic,
+    duration:Number(document.getElementById('l-dur').value),
+    teacher:document.getElementById('l-teacher').value,
+    homework:document.getElementById('l-hw').value,
+    notes:document.getElementById('l-notes').value,
+    present:[...presenceData.present],
+    absent:[...presenceData.absent],
+  };
+  if(id) lessons=lessons.map(l=>l.id===id?obj:l);
+  else lessons.push(obj);
+  closeModal(); toast(id?'✅ Aula atualizada!':'✅ Aula registrada!'); render();
+}
+
+function delLesson(id){
+  if(!confirm('Remover este registro?'))return;
+  lessons=lessons.filter(l=>l.id!==id);
+  toast('🗑 Registro removido.'); render();
+}
+
+// ═══════════════ PAYMENTS ═══════════════
+let pyFilter={search:'',status:'todos',student:'todos'};
+
+function renderPayments(){
+  const filtered=payments.filter(p=>{
+    const q=pyFilter.search.toLowerCase();
+    return (pyFilter.status==='todos'||p.status===pyFilter.status)
+      &&(pyFilter.student==='todos'||p.studentId===Number(pyFilter.student))
+      &&(p.student.toLowerCase().includes(q)||p.month.toLowerCase().includes(q));
+  });
+  const totPago=payments.filter(p=>p.status==='pago').reduce((a,b)=>a+b.value,0);
+  const totAtrasado=payments.filter(p=>p.status==='atrasado').reduce((a,b)=>a+b.value,0);
+  const totAvencer=payments.filter(p=>p.status==='avencer').reduce((a,b)=>a+b.value,0);
+
+  return `
+  <div class="stats-grid">
+    ${[
+      {icon:'✅',label:'Total Recebido',value:fmtBRL(totPago),color:'#10b981'},
+      {icon:'⚠',label:'Em Atraso',value:fmtBRL(totAtrasado),color:'#ef4444'},
+      {icon:'⏳',label:'A Vencer',value:fmtBRL(totAvencer),color:'#f59e0b'},
+      {icon:'💳',label:'Total Registros',value:payments.length,color:'#6366f1'},
+    ].map(s=>`<div class="stat-card" style="border-top:4px solid ${s.color}">
+      <div class="stat-icon" style="background:${s.color}18">${s.icon}</div>
+      <div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>
+    </div>`).join('')}
+  </div>
+  <div class="toolbar">
+    <input class="search-input" placeholder="🔍  Buscar por aluno ou mês..." value="${esc(pyFilter.search)}" oninput="pyFilter.search=this.value;render()"/>
+    <select style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px" onchange="pyFilter.status=this.value;render()">
+      <option value="todos" ${pyFilter.status==='todos'?'selected':''}>Todos</option>
+      <option value="pago" ${pyFilter.status==='pago'?'selected':''}>Pagos</option>
+      <option value="atrasado" ${pyFilter.status==='atrasado'?'selected':''}>Atrasados</option>
+      <option value="avencer" ${pyFilter.status==='avencer'?'selected':''}>A vencer</option>
+    </select>
+    <select style="background:#13151f;border:1px solid #1e2235;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px" onchange="pyFilter.student=this.value;render()">
+      <option value="todos">Todos os alunos</option>
+      ${students.map(s=>`<option value="${s.id}" ${pyFilter.student==s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
+    </select>
+    <button class="btn-primary" onclick="openPaymentModal()">+ Lançar</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Aluno</th><th>Mês</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Pago em</th><th>Forma</th><th>Ações</th></tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="8" class="empty-table">Nenhum registro encontrado.</td></tr>`:
+          filtered.map(p=>`<tr class="data-row">
+            <td><div style="display:flex;align-items:center;gap:8px">
+              <div class="av-sm" style="background:#6366f1">${av(p.student)}</div>
+              <span class="row-primary">${esc(p.student)}</span>
+            </div></td>
+            <td><span class="row-primary">${p.month}</span></td>
+            <td><span class="row-sec">${fmtDate(p.due)}</span></td>
+            <td><span style="font-weight:700;color:#e2e8f0">${fmtBRL(p.value)}</span></td>
+            <td>${statusBadge(p.status)}</td>
+            <td><span class="row-sec">${p.paidAt?fmtDate(p.paidAt):'—'}</span></td>
+            <td><span class="row-sec">${p.method||'—'}</span></td>
+            <td><div style="display:flex;gap:6px">
+              ${p.status!=='pago'?`<button class="btn-icon btn-pay" onclick="markPaid(${p.id})">✓ Pago</button>`:''}
+              <button class="btn-icon" onclick="openPaymentModal(${p.id})">✏️</button>
+              <button class="btn-icon btn-danger" onclick="delPayment(${p.id})">🗑</button>
+            </div></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openPaymentModal(id){
+  const p=id?payments.find(x=>x.id===id):{id:null,studentId:students[0]?.id||1,month:'',due:todayStr(),value:310,status:'avencer',paidAt:'',method:''};
+  const body=`<div class="form-grid">
+    <div class="field"><label>Aluno</label>
+      <select id="p-student">${students.map(s=>`<option value="${s.id}" ${p.studentId==s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+    </div>
+    <div class="field half"><label>Mês de referência</label><input id="p-month" value="${esc(p.month)}" placeholder="Abr/2026"/></div>
+    <div class="field half"><label>Vencimento</label><input id="p-due" type="date" value="${p.due||''}"/></div>
+    <div class="field half"><label>Valor (R$)</label><input id="p-value" type="number" value="${p.value}"/></div>
+    <div class="field half"><label>Status</label>
+      <select id="p-status" onchange="togglePayFields(this.value)">
+        <option value="avencer" ${p.status==='avencer'?'selected':''}>A vencer</option>
+        <option value="pago" ${p.status==='pago'?'selected':''}>Pago</option>
+        <option value="atrasado" ${p.status==='atrasado'?'selected':''}>Atrasado</option>
+      </select>
+    </div>
+    <div id="pay-extra" style="${p.status==='pago'?'':'display:none'};display:${p.status==='pago'?'contents':'none'}">
+      <div class="field half"><label>Data do pagamento</label><input id="p-paidAt" type="date" value="${p.paidAt||''}"/></div>
+      <div class="field half"><label>Forma de pagamento</label>
+        <select id="p-method"><option value="">—</option>${['PIX','Boleto','Cartão','Dinheiro','Transferência'].map(m=>`<option ${p.method===m?'selected':''}>${m}</option>`).join('')}</select>
+      </div>
+    </div>
+  </div>`;
+  const footer=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="savePayment(${id||'null'})">${id?'Salvar':'Lançar'}</button>`;
+  openModal(id?'✏️ Editar Registro':'💰 Lançar Mensalidade',body,false,footer);
+}
+
+function togglePayFields(v){
+  const el=document.getElementById('pay-extra');
+  if(el) el.style.display=v==='pago'?'contents':'none';
+}
+
+function savePayment(id){
+  const month=document.getElementById('p-month').value.trim();
+  const value=document.getElementById('p-value').value;
+  if(!month||!value){alert('Mês e valor são obrigatórios.');return;}
+  const sid=Number(document.getElementById('p-student').value);
+  const stu=students.find(s=>s.id===sid);
+  const status=document.getElementById('p-status').value;
+  const obj={id:id||uid(),studentId:sid,student:stu?.name||'',month,due:document.getElementById('p-due').value,value:Number(value),status,paidAt:status==='pago'?(document.getElementById('p-paidAt')?.value||null):null,method:status==='pago'?(document.getElementById('p-method')?.value||null):null};
+  if(id) payments=payments.map(p=>p.id===id?obj:p);
+  else payments.push(obj);
+  closeModal(); toast('✅ Registro financeiro salvo!'); render();
+}
+
+function markPaid(id){
+  payments=payments.map(p=>p.id===id?{...p,status:'pago',paidAt:todayStr()}:p);
+  toast('✅ Mensalidade marcada como paga!'); render();
+}
+
+function delPayment(id){
+  if(!confirm('Remover este registro?'))return;
+  payments=payments.filter(p=>p.id!==id);
+  toast('🗑 Registro removido.'); render();
+}
+
+// ═══════════════ REPORTS ═══════════════
+let activeRep='frequencia';
+
+function renderReports(){
+  const tabs=['frequencia','financeiro','turmas'];
+  const tabLabels={'frequencia':'📊 Frequência','financeiro':'💰 Financeiro','turmas':'🏫 Turmas'};
+
+  let content='';
+  if(activeRep==='frequencia'){
+    const freqData=students.filter(s=>s.status==='ativo').map(s=>{
+      const aulasTurma=lessons.filter(l=>l.turmaId===s.turma);
+      const presentes=aulasTurma.filter(l=>(l.present||[]).includes(s.id)).length;
+      const total=aulasTurma.length;
+      const pct=total>0?Math.round((presentes/total)*100):0;
+      return {...s,presentes,total,pct};
+    }).sort((a,b)=>b.pct-a.pct);
+
+    content=`<div class="card"><div class="card-header"><span class="card-title">Frequência por Aluno</span></div>
+      ${freqData.map(s=>{
+        const t=turmas.find(x=>x.id===s.turma)||{};
+        const color=s.pct>=75?'#10b981':s.pct>=50?'#f59e0b':'#ef4444';
+        return `<div class="rep-bar-wrap">
+          <div class="rep-bar-top">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="av-sm" style="background:#6366f1">${av(s.name)}</div>
+              <div>
+                <span class="row-primary">${esc(s.name)}</span>
+                <span class="badge" style="margin-left:8px;background:${(t.color||'#6366f1')}22;color:${t.color||'#6366f1'}">${s.turma}</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <span class="row-sec">${s.presentes}/${s.total} aulas</span>
+              <span style="font-weight:800;font-size:15px;color:${color}">${s.pct}%</span>
+            </div>
+          </div>
+          <div class="prog-bg"><div class="prog-fill" style="width:${s.pct}%;background:${color}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  if(activeRep==='financeiro'){
+    const months=['Jan/2026','Fev/2026','Mar/2026','Abr/2026'];
+    const finData=months.map(m=>({
+      month:m,
+      pago:payments.filter(p=>p.month===m&&p.status==='pago').reduce((a,b)=>a+b.value,0),
+      atrasado:payments.filter(p=>p.month===m&&p.status==='atrasado').reduce((a,b)=>a+b.value,0),
+      avencer:payments.filter(p=>p.month===m&&p.status==='avencer').reduce((a,b)=>a+b.value,0),
+    }));
+    const maxVal=Math.max(...finData.map(d=>d.pago),1);
+    content=`<div class="card"><div class="card-header"><span class="card-title">Receita Mensal</span></div>
+      ${finData.map(d=>`<div class="rep-bar-wrap">
+        <div class="rep-bar-top">
+          <span style="font-weight:700;color:#e2e8f0;font-size:15px">${d.month}</span>
+          <span style="font-weight:800;color:#10b981;font-size:15px">${fmtBRL(d.pago)}</span>
+        </div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${Math.round((d.pago/maxVal)*100)}%;background:#10b981"></div></div>
+        <div style="display:flex;gap:16px;margin-top:5px">
+          <span style="font-size:12px;color:#ef4444">⚠ Atrasado: ${fmtBRL(d.atrasado)}</span>
+          <span style="font-size:12px;color:#f59e0b">⏳ A vencer: ${fmtBRL(d.avencer)}</span>
+        </div>
+      </div>`).join('')}
+      <div style="border-top:1px solid #1e2235;padding-top:14px;margin-top:4px;display:flex;justify-content:space-between">
+        <span style="color:#94a3b8;font-weight:600">Total Arrecadado</span>
+        <span style="color:#10b981;font-weight:800;font-size:18px">${fmtBRL(finData.reduce((a,b)=>a+b.pago,0))}</span>
+      </div>
+    </div>`;
+  }
+
+  if(activeRep==='turmas'){
+    content=`<div class="card"><div class="card-header"><span class="card-title">Relatório por Turma</span></div>
+      ${turmas.map(t=>{
+        const tStudents=students.filter(s=>s.turma===t.id&&s.status==='ativo');
+        const tLessons=lessons.filter(l=>l.turmaId===t.id);
+        const avgPres=tLessons.length>0?Math.round(tLessons.reduce((a,l)=>a+(l.present?.length||0),0)/tLessons.length):0;
+        return `<div class="list-row" style="background:#1a1d27;border-radius:10px;margin-bottom:10px;padding:14px">
+          <div class="color-dot" style="background:${t.color};width:12px;height:12px;border-radius:50%"></div>
+          <div style="flex:1">
+            <div class="row-primary">${esc(t.name)}</div>
+            <div class="row-sec">${esc(t.teacher)} · ${t.days} ${t.time}</div>
+          </div>
+          <div style="display:flex;gap:20px;text-align:center">
+            <div><div style="font-weight:800;color:${t.color};font-size:20px">${tStudents.length}</div><div class="row-sec">alunos</div></div>
+            <div><div style="font-weight:800;color:#e2e8f0;font-size:20px">${tLessons.length}</div><div class="row-sec">aulas</div></div>
+            <div><div style="font-weight:800;color:#10b981;font-size:20px">${avgPres}</div><div class="row-sec">média/aula</div></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  return `
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    ${tabs.map(t=>`<button class="tab-btn ${activeRep===t?'active':''}" onclick="switchRep('${t}')">${tabLabels[t]}</button>`).join('')}
+  </div>
+  ${content}`;
+}
+
+function switchRep(rep){activeRep=rep;render();}
+
+// ═══════════════ INIT ═══════════════
+document.getElementById('page-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+buildNav();
+render();
+</script>
+</body>
+</html>
